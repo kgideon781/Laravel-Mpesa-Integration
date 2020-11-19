@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use http\Client\Response;
 use Illuminate\Http\Request;
 
 use DB;
@@ -60,6 +61,10 @@ class confirmcallback extends Controller
                     $orgaccountbalance] );
                             
     echo'{"ResultCode":0,"ResultDesc":"Confirmation received successfully"}';
-        
+
+        // Responding to the confirmation request
+        $response = new Response();
+        $response->headers->set("Content-Type","text/xml; charset=utf-8");
+        $response->setContent(json_encode(["C2BPaymentConfirmationResult"=>"Success"]));
     }
 }
