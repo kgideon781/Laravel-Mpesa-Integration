@@ -1,70 +1,91 @@
 <?php
-
 namespace App\Http\Controllers;
-
-use http\Client\Response;
 use Illuminate\Http\Request;
-
 use DB;
-
+Use Redirect;
 use Illuminate\Support\Facades\Log;
-
 class confirmcallback extends Controller
 {
     public function storeResults(Request $requests){
-        
-        $request=file_get_contents('php://input');
-        
-        //process the received content into an array
-        $array = json_decode($request, true);
-        $transactiontype= $array['TransactionType']; 
-        $transid=$array['TransID']; 
-        $transtime=$array['TransTime']; 
-        $transamount=$array['TransAmount']; 
-        $businessshortcode=$array['BusinessShortCode']; 
-        $billrefno=$array['BillRefNumber']; 
-        $invoiceno=$array['InvoiceNumber']; 
-        $msisdn=$array['MSISDN']; 
-        $orgaccountbalance=$array['OrgAccountBalance']; 
-        $firstname=$array['FirstName']; 
-        $middlename=$array['MiddleName']; 
-        $lastname=$array['LastName'];
-        
-       // Log::info('RECEIVED TRANSAMOUNT: '.$transamount);
-        
-        DB::insert('INSERT INTO payments
-                    ( 
-                    TransactionType,
-                    TransID,
-                    TransTime,
-                    TransAmount,
-                    BusinessShortCode,
-                    BillRefNumber,
-                    InvoiceNumber,
-                    MSISDN,
-                    FirstName,
-                    MiddleName,
-                    LastName,
-                    OrgAccountBalance
-                    )   values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [$transactiontype, 
-                    $transid, 
-                    $transtime, 
-                    $transamount, 
-                    $businessshortcode, 
-                    $billrefno, 
-                    $invoiceno, 
-                    $msisdn,
-                    $firstname, 
-                    $middlename, 
-                    $lastname, 
-                    $orgaccountbalance] );
-                            
-    echo'{"ResultCode":0,"ResultDesc":"Confirmation received successfully"}';
 
-        // Responding to the confirmation request
-        $response = new Response();
-        $response->headers->set("Content-Type","text/xml; charset=utf-8");
-        $response->setContent(json_encode(["C2BPaymentConfirmationResult"=>"Success"]));
+        if($requests->isMethod('POST'))
+        {
+            $request = file_get_contents('php://input');
+
+            Log::error('RECEIVED INFORMATION: '.$request);
+
+            //process the received content into an array
+
+
+            $decoded  = json_decode($requests);
+            $decoded  = json_decode($request);
+
+            $status_result = $decoded->Body->stkCallback->ResultCode;
+
+
+
+            $status_result_desc = $decoded->Body->stkCallback->ResultDesc;
+            $CheckoutRequestID = $decoded->Body->stkCallback->CheckoutRequestID;
+
+            if ($status_result == 0){
+
+                $decoded_body = $decoded->Body->stkCallback->CallbackMetadata;
+
+                $specificAmount = $decoded_body->Item[0]->Value;
+                $specificMpesaReceiptNumber = $decoded_body->Item[1]->Value;
+
+                $specificTransactionDate = $decoded_body->Item[3]->Value;
+                $specificPhoneNumber = $decoded_body->Item[4]->Value;
+
+
+                DB::update('UPDATE payments set
+                                   
+                                   Amount =?,
+                                   MpesaReceiptNumber =?,
+                                   TransactionDate =?,
+                                   PhoneNumber =?,
+                                   ResultCode = ?,
+                                   status = ?
+                                 
+                                   where CheckoutRequestID = ?',
+                    [$specificAmount,
+                        $specificMpesaReceiptNumber,
+                        $specificTransactionDate,
+                        $specificPhoneNumber,
+                        $status_result,
+                        0,
+                        $CheckoutRequestID
+
+                    ] );
+
+
+                //if execution reaches here, then all did went well!
+            }
+            else{
+                session()->put('_paystatus',strval($status_result));
+                DB::update('UPDATE payments set
+                                   
+                                   ResultDesc =?,
+                                   ResultCode = ?,
+                                   status = ?
+                                 
+                                   where CheckoutRequestID = ?',
+                    [
+                        $status_result_desc,
+                        $status_result,
+                        2,
+                        $CheckoutRequestID
+
+                    ] );
+
+
+            }
+        }
+
     }
+    public function check(Request $request, $CheckoutRequestID){
+        $state_ =  DB::table('payments')-> where('CheckoutRequestID',$CheckoutRequestID)->pluck('status');
+        return $state_;
+    }
+
 }

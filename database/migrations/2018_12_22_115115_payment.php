@@ -16,6 +16,8 @@ class Payment extends Migration
          Schema::create('payments', function (Blueprint $table) {
             $table->increments('id');
             $table->string('TransactionType');
+            $table->string('MerchantRequestID');
+            $table->string('CheckoutRequestID');
             $table->string('TransID');
             $table->string('TransTime');
             $table->string('TransAmount');
