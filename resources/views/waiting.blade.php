@@ -68,8 +68,8 @@
     var status_completion = '<?= $complete ?>';
     if(!status_completion){
         //if status_completion = false, request went well...continue processing
-        if('<?= $CheckoutRequestID =""; ?>'){
-            if('<?php if(!empty($CheckoutRequestID)) ?>'){
+        if('<?= $CheckoutRequestID ="": ?>'){
+            if('<?php if(!empty($CheckoutRequestID)): ?>'){
 
 
                 var CheckoutRequestID = '<?= $CheckoutRequestID ?>';
@@ -126,7 +126,7 @@
 
                     });
                 },2000);
-            <? endif; ?>
+            <?php endif; ?>
             }
 
 
