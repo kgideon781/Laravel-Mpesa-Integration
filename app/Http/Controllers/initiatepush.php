@@ -10,7 +10,7 @@ class initiatepush extends Controller
 
         $phoneNumber = "254".substr($request['phonenumber'], -9);
 
-        $CallBackURL = 'https://peternjeru.co.ke/safdaraja/api/callback.php';
+        $CallBackURL = 'https://integrate-payment.herokuapp.com/callback';
 
         Log::error('INITIATION PHONE RECEIVED: '.$phoneNumber);
 
