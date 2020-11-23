@@ -11,74 +11,81 @@ use Safaricom\Mpesa\Mpesa;
 
 class initiatepush extends Controller
 {
-    public function pay(Request $request){
-        $Amount =$request->input('amount');
+    public function pay(Request $request)
+    {
+        $Amount = $request->input('amount');
 
-        $phoneNumber = "254".substr($request['phonenumber'], -9);
+        $phoneNumber = "254" . substr($request['phonenumber'], -9);
 
         $CallBackURL = 'https://mpesa-laravel.herokuapp.com/callback';
 
-        Log::error('INITIATION PHONE RECEIVED: '.$phoneNumber);
+        Log::error('INITIATION PHONE RECEIVED: ' . $phoneNumber);
 
-        if($Amount != 0){
+        if ($Amount != 0) {
 
-            $mpesa= new Mpesa();
+            $mpesa = new Mpesa();
 
-            $stkPushSimulation=$mpesa->STKPushSimulation(174379, 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'CustomerPayBillOnline', $Amount, $phoneNumber, 174379, $phoneNumber, $CallBackURL, 'Giddy', 'Pay Giddy his dues', 'Payment');
+            $stkPushSimulation = $mpesa->STKPushSimulation(174379, 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'CustomerPayBillOnline', $Amount, $phoneNumber, 174379, $phoneNumber, $CallBackURL, 'lozadasuplies', 'lozada', 'Payment');
 
 
-            if (!empty($stkPushSimulation)){
+            if ($Amount != 0) {
 
-                $state = json_decode($stkPushSimulation);
+                $mpesa = new Mpesa();
 
-                if (property_exists($state,"ResponseCode")){
+                $stkPushSimulation = $mpesa->STKPushSimulation(174379, 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'CustomerPayBillOnline', $Amount, $phoneNumber, 174379, $phoneNumber, $CallBackURL, 'lozadasuplies', 'lozada', 'Payment');
 
-                    $ResponseCode = $state->ResponseCode;
 
-                    $CustomerMessage = $state->CustomerMessage;
+                if (!empty($stkPushSimulation)) {
 
-                    if ($ResponseCode == '0'){
+                    $state = json_decode($stkPushSimulation);
 
-                        $MerchantRequestID = $state->MerchantRequestID;
+                    if (array_key_exists("ResponseCode", $state)) {
 
-                        $CheckoutRequestID = $state->CheckoutRequestID;
+                        $ResponseCode = $state->ResponseCode;
 
-                        DB::insert('INSERT INTO payments
+                        $CustomerMessage = $state->CustomerMessage;
+
+                        if ($ResponseCode == '0') {
+
+                            $MerchantRequestID = $state->MerchantRequestID;
+
+                            $CheckoutRequestID = $state->CheckoutRequestID;
+
+                            DB::insert('INSERT INTO payments
                                              ( 
                                              MerchantRequestID,
                                              CheckoutRequestID
                                              
                                              )   values (?, ?)',
-                            [$MerchantRequestID,
-                                $CheckoutRequestID
-                            ] );
-                        return view('waiting', ['CheckoutRequestID' => $CheckoutRequestID,'CustomerMessage' =>$CustomerMessage,'complete'=>false]);
-                    }
-                    else
-                    {
+                                [$MerchantRequestID,
+                                    $CheckoutRequestID
+                                ]);
+                            return view('waiting', ['CheckoutRequestID' => $CheckoutRequestID, 'CustomerMessage' => $CustomerMessage, 'complete' => false]);
+                        } else {
 
-                        return view('waiting', ['CheckoutRequestID' =>0, 'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
-                    }
-                }
-                elseif(property_exists($state,"errorCode")){
+                            return view('waiting', ['CheckoutRequestID' => 0, 'CustomerMessage' => $CustomerMessage, 'complete' => true]);
+                        }
+                    } elseif (array_key_exists("errorCode", $state)) {
 
-                    if(($state->errorCode) == "500.001.1001"){
-                        $CustomerMessage = "Looks like you provided an invalid phone number";
-                        return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
-                    }else{
+                        if (($state->errorCode) == "500.001.1001") {
+                            $CustomerMessage = "Looks like you provided an invalid phone number";
+                            return view('waiting', ['CheckoutRequestID' => 0, 'CustomerMessage' => $CustomerMessage, 'complete' => true]);
+                        } else {
+                            $CustomerMessage = "Bad payment request, please contact support";
+                            return view('waiting', ['CheckoutRequestID' => 0, 'CustomerMessage' => $CustomerMessage, 'complete' => true]);
+                        }
+
+                    } else {
                         $CustomerMessage = "Bad payment request, please contact support";
-                        return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
+                        return view('waiting', ['CheckoutRequestID' => 0, 'CustomerMessage' => $CustomerMessage, 'complete' => true]);
                     }
-
-                }else{
-                    $CustomerMessage = "Bad payment request, please contact support";
-                    return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                 }
+
+            } else {
+                echo "Go buy some tea with that amount";
             }
 
-        }else
-        {
-            echo "Go buy some tea with that amount";
+
         }
 
     }

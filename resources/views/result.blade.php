@@ -9,25 +9,6 @@
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
-    <script>
-        function validate(evt) {
-            var theEvent = evt || window.event;
-
-            // Handle paste
-            if (theEvent.type === 'paste') {
-                key = event.clipboardData.getData('text/plain');
-            } else {
-                // Handle key press
-                var key = theEvent.keyCode || theEvent.which;
-                key = String.fromCharCode(key);
-            }
-            var regex = /[0-9]/;
-            if( !regex.test(key) ) {
-                theEvent.returnValue = false;
-                if(theEvent.preventDefault) theEvent.preventDefault();
-            }
-        }
-    </script>
 
     <style>
         html, body {
@@ -70,23 +51,18 @@
             font-weight: 150;
             font-size:15px;
         }
-
     </style>
 </head>
 <body>
 <div class="content">
     <div class="title m-b-md">
-        Pay Here
+        Results:
     </div>
-    <form action="/requestpay" method="POST">
-        <input type = "hidden" name = "_token" value = "<?php echo csrf_token(); ?>">
-        <label>phone to send push STK</label><br>
-        <input type='text' onkeypress='validate(event)' name="phonenumber" placeholder="254..." maxlength="12" minlength="10" required><br><br>
-        <label>Amount to request Payment</label><br>
-        <input type="number" onkeypress='validate(event)' name="amount" style="width: 25px;" placeholder="Ksh." min="1" max="99" required><br><br>
-
-        <input  class="send" type="submit" value="Send Request">
-    </form>
+    @if(!empty($receipt))
+        <p>Payment received with receipt <?= $receipt ?> amount: <?= $amount ?><p>
+    @elseif(!empty($reason))
+        <p>Payment failed with <?= $reason ?></p>
+    @endif
 </div>
 </body>
-</html
+</html>

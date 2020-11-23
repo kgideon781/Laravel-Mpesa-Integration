@@ -50,7 +50,7 @@
             width:150px;
             border-radius:60px;
             font-family: 'Raleway', sans-serif;
-            font-weight: 200;
+            font-weight: 150;
             font-size:15px;
         }
     </style>
@@ -58,7 +58,7 @@
 </head>
 <body>
 <div class="content">
-    <h4><?= $CustomerMessage="" ?></h4><br>
+    <h4><?= $CustomerMessage ?></h4><br>
     <canvas id="progress"></canvas>
 
     <div class="title m-b-md">
@@ -67,7 +67,7 @@
 
 </div>
 <script>
-    console.log('<?= $complete ="" ?>' + ': Status completion');
+    console.log('<?= $complete ?>' + ': STatus completion');
     var time_counter = 0;
     var final_data = 0;
     printbubble();
@@ -75,7 +75,7 @@
     if(!status_completion){
         //if status_completion = false, request went well...continue processing
 
-        var CheckoutRequestID = '<?= $CheckoutRequestID="" ?>';
+        var CheckoutRequestID = '<?= $CheckoutRequestID ?>';
 
         var refreshIntervalId = setInterval(function getStatus() {
             time_counter = time_counter + 2;
