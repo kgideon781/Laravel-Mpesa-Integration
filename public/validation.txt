@@ -1,0 +1,1 @@
+{"TransactionType":"","TransID":"7L93I8SMUD","TransTime":"20201123090116","TransAmount":"1000","BusinessShortCode":"603421","BillRefNumber":"gerrara","InvoiceNumber":"","OrgAccountBalance":"49197.00","ThirdPartyTransID":"","MSISDN":"254708374149","FirstName":"John","MiddleName":"","LastName":"Doe"}

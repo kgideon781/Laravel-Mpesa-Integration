@@ -1,8 +1,14 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
+
 use DB;
+
 use Illuminate\Support\Facades\Log;
+use Safaricom\Mpesa\Mpesa;
+
 class initiatepush extends Controller
 {
     public function pay(Request $request){
@@ -10,15 +16,15 @@ class initiatepush extends Controller
 
         $phoneNumber = "254".substr($request['phonenumber'], -9);
 
-        $CallBackURL = 'https://integrate-payment.herokuapp.com/callback';
+        $CallBackURL = 'https://8098acf7d8a7.ngrok.io/callback';
 
         Log::error('INITIATION PHONE RECEIVED: '.$phoneNumber);
 
         if($Amount != 0){
 
-            $mpesa= new \Safaricom\Mpesa\Mpesa();
+            $mpesa= new Mpesa();
 
-            $stkPushSimulation=$mpesa->STKPushSimulation(174379, 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'CustomerPayBillOnline', $Amount, $phoneNumber, 174379, $phoneNumber, $CallBackURL, 'lozadasuplies', 'lozada', 'Payment');
+            $stkPushSimulation=$mpesa->STKPushSimulation(174379, 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'CustomerPayBillOnline', $Amount, $phoneNumber, 174379, $phoneNumber, $CallBackURL, 'Giddy', 'Pay Giddy his dues', 'Payment');
 
 
             if (!empty($stkPushSimulation)){
@@ -37,47 +43,13 @@ class initiatepush extends Controller
 
                         $CheckoutRequestID = $state->CheckoutRequestID;
 
-                        $TransactionType = "sandbox";
-                        $TransID = '12251';
-                        $TransTime = "jhjuigui";
-                        $TransAmount = "0";
-                        $BusinessShortCode = "17374";
-                        $BillRefNumber = "";
-                        $InvoiceNumber = "";
-                        $MSISDN = "";
-                        $FirstName = "";
-                        $LastName = "";
-                        $OrgAccountBalance = "";
                         DB::insert('INSERT INTO payments
                                              ( 
-                                             TransactionType,
-                                             TransID,
-                                             MSISDN,
-                                             OrgAccountBalance,
-                                             InvoiceNumber,
-                                             BusinessShortCode,
-                                             TransAmount,
-                                             TransTime,
                                              MerchantRequestID,
-                                             BillRefNumber,
-                                             FirstName,
-                                             LastName,
                                              CheckoutRequestID
                                              
-                                             )   values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                            [
-                                $TransactionType,
-                                $TransID,
-                                $InvoiceNumber,
-                                $BusinessShortCode,
-                                $BillRefNumber,
-                                $TransAmount,
-                                $LastName,
-                                $TransTime,
-                                $FirstName,
-                                $MerchantRequestID,
-                                $MSISDN,
-                                $OrgAccountBalance,
+                                             )   values (?, ?)',
+                            [$MerchantRequestID,
                                 $CheckoutRequestID
                             ] );
                         return view('waiting', ['CheckoutRequestID' => $CheckoutRequestID,'CustomerMessage' =>$CustomerMessage,'complete'=>false]);
@@ -85,7 +57,6 @@ class initiatepush extends Controller
                     else
                     {
 
-                        return view('waiting', ['CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                         return view('waiting', ['CheckoutRequestID' =>0, 'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                     }
                 }
@@ -93,17 +64,14 @@ class initiatepush extends Controller
 
                     if(($state->errorCode) == "500.001.1001"){
                         $CustomerMessage = "Looks like you provided an invalid phone number";
-                        return view('waiting', ['CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                         return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                     }else{
                         $CustomerMessage = "Bad payment request, please contact support";
-                        return view('waiting', ['CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                         return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                     }
 
                 }else{
                     $CustomerMessage = "Bad payment request, please contact support";
-                    return view('waiting', ['CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                     return view('waiting', ['CheckoutRequestID' =>0,'CustomerMessage' =>$CustomerMessage,'complete'=>true]);
                 }
             }
