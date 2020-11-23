@@ -16,7 +16,7 @@ class initiatepush extends Controller
 
         $phoneNumber = "254".substr($request['phonenumber'], -9);
 
-        $CallBackURL = 'https://8098acf7d8a7.ngrok.io/callback';
+        $CallBackURL = 'https://mpesa-laravel.herokuapp.com/callback';
 
         Log::error('INITIATION PHONE RECEIVED: '.$phoneNumber);
 
